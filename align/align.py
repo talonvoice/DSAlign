@@ -629,15 +629,18 @@ def main():
             transcripts = progress(pool.imap(stt, samples), desc='Transcribing', total=len(samples))
 
             fragments = []
+            empty = 0
             for time_start, time_end, segment_transcript in transcripts:
                 if segment_transcript is None:
+                    empty += 1
                     continue
                 fragments.append({
                     'start': time_start,
                     'end': time_end,
                     'transcript': segment_transcript
                 })
-            logging.debug('Excluded {} empty transcripts'.format(len(transcripts) - len(fragments)))
+            if empty:
+                logging.debug('Excluded {} empty transcripts'.format(empty))
 
             logging.debug('Writing transcription log to file "{}"...'.format(tlog))
             with open(tlog, 'w') as tlog_file:
