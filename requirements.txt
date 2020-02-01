@@ -1,8 +1,9 @@
 cffi
 six
 sox
-deepspeech==0.6.0
 webrtcvad
 tqdm
 textdistance
 pydub
+numpy
+deepspeech==0.6.0
