@@ -1,5 +1,4 @@
 import glob
-from deepspeech import Model
 
 class DeepspeechLoader:
     def load_model(self, models, alphabet, lm, lexicon, trie):
@@ -12,6 +11,7 @@ class DeepspeechLoader:
         :param trie: Trie file
         :return: tuple (DeepSpeech object, Model Load Time, LM Load Time)
         """
+        from deepspeech import Model
         N_FEATURES = 26
         N_CONTEXT = 9
         BEAM_WIDTH = 500
