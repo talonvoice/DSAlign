@@ -6,4 +6,3 @@ tqdm
 textdistance
 pydub
 numpy
-deepspeech==0.6.0
