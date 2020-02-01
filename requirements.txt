@@ -5,4 +5,5 @@ webrtcvad
 tqdm
 textdistance
 pydub
+cython
 numpy
