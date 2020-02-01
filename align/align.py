@@ -61,11 +61,11 @@ def read_script(script_path):
     return tc
 
 
-def init_stt(output_graph_path, alphabet_path, lm_path, trie_path, rate):
+def init_stt(output_graph_path, alphabet_path, lm_path, lexicon_path, trie_path, rate):
     global model, sample_rate
     sample_rate = rate
     logging.debug('Process {}: Loaded models'.format(os.getpid()))
-    model = wavTranscriber.load_model(output_graph_path, alphabet_path, lm_path, trie_path)
+    model = wavTranscriber.load_model(output_graph_path, alphabet_path, lm_path, lexicon_path, trie_path)
 
 
 def stt(sample):
@@ -539,6 +539,14 @@ def main():
 
     model_dir = os.path.expanduser(args.stt_model_dir if args.stt_model_dir else 'models/en')
 
+    use_w2l = False
+    for name in os.listdir(model_dir):
+        if name.startswith('libw2l.'):
+            use_w2l = True
+            import wav2letter
+            wavTranscriber.loader = wav2letter.W2lLoader(model_dir)
+            break
+
     if args.alphabet is not None:
         alphabet_path = args.alphabet
     else:
@@ -593,6 +601,12 @@ def main():
                         lm_path
                     ])
 
+                lexicon_path = script + '.lexicon'
+                if not path.exists(lexicon_path):
+                    with open(lexicon_path, 'w') as f:
+                        for word in set(tc.clean_text.strip().split(' ')):
+                            f.write('{} {}\n'.format(word, ' '.join(word)))
+
                 trie_path = script + '.trie'
                 if not path.exists(trie_path):
                     subprocess.check_call([
@@ -628,7 +642,7 @@ def main():
             samples = list(progress(pre_filter(), desc='VAD splitting'))
 
             pool = multiprocessing.Pool(initializer=init_stt,
-                                        initargs=(output_graph_path, alphabet_path, lm_path, trie_path, rate),
+                                        initargs=(output_graph_path, alphabet_path, lm_path, lexicon_path, trie_path, rate),
                                         processes=args.stt_workers)
             transcripts = progress(pool.imap(stt, samples), desc='Transcribing', total=len(samples))
 

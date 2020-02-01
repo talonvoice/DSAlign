@@ -1,3 +1,4 @@
+cffi
 six
 sox
 deepspeech==0.6.0
