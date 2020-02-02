@@ -84,13 +84,13 @@ class W2lDecoder:
                                   lexicon.encode('utf8'), lexicon_flat.encode('utf8'))
 
         decode_opts = ffi.new('w2l_decode_options *')
-        decode_opts.beamsize = 183
+        decode_opts.beamsize = 250
         decode_opts.beamthresh = 23.530
-        decode_opts.lmweight = 1.30
-        decode_opts.wordscore = 0.5
+        decode_opts.lmweight = 2.1
+        decode_opts.wordscore = 3.41
         decode_opts.unkweight = -float('Inf')
         decode_opts.logadd = False
-        decode_opts.silweight = 0
+        decode_opts.silweight = 0.04
         self.decode_opts = decode_opts
 
         self.encoder = encoder
