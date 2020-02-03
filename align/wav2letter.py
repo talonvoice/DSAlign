@@ -70,11 +70,11 @@ class W2lEncoder:
 
     def emit(self, samples):
         array = ffi.new('float []', list(samples))
-        emission = lib.w2l_engine_process(self.encoder.handle, array, len(array))
+        emission = lib.w2l_engine_process(self.handle, array, len(array))
         try:
             emit_text = lib.w2l_emission_text(emission)
-            emit = consume_c_text(emit_text, sep=' ')
-            return emit
+            emit = consume_c_text(emit_text, sep='|')
+            return ' '.join(emit)
         finally:
             lib.w2l_emission_free(emission)
 
@@ -142,10 +142,13 @@ class W2lLoader:
                     if token == '|': token = ' '
                     f.write(token + '\n')
 
-    def load_model(self, models, alphabet, lm, lexicon, trie):
+    def load_encoder(self):
         am = os.path.join(self.path, 'acoustic.bin')
         tokens = os.path.join(self.path, 'tokens.txt')
-        encoder = W2lEncoder(am, tokens)
+        return W2lEncoder(am, tokens)
+
+    def load_model(self, models, alphabet, lm, lexicon, trie):
+        encoder = self.load_encoder()
         decoder = W2lDecoder(encoder, lm, lexicon, lexicon + '.flat')
         return decoder
 
