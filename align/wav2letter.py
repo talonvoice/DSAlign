@@ -68,6 +68,16 @@ class W2lEncoder:
         self.handle = None
         self.handle = lib.w2l_engine_new(am.encode('utf8'), tokens.encode('utf8'))
 
+    def emit(self, samples):
+        array = ffi.new('float []', list(samples))
+        emission = lib.w2l_engine_process(self.encoder.handle, array, len(array))
+        try:
+            emit_text = lib.w2l_emission_text(emission)
+            emit = consume_c_text(emit_text, sep=' ')
+            return emit
+        finally:
+            lib.w2l_emission_free(emission)
+
     def __del__(self):
         if self.handle:
             lib.w2l_engine_free(self.handle)
@@ -102,7 +112,8 @@ class W2lDecoder:
                                           lexicon.encode('utf8'), lexicon_flat.encode('utf8'), decode_opts)
 
     def decode(self, samples):
-        emission = lib.w2l_engine_process(self.encoder.handle, samples, len(samples))
+        array = ffi.new('float []', list(samples))
+        emission = lib.w2l_engine_process(self.encoder.handle, array, len(array))
         decode_result = lib.w2l_decoder_decode(self.handle, emission)
         decode_text = lib.w2l_decoder_result_words(self.handle, decode_result)
         decoded = consume_c_text(decode_text, sep=' ')
@@ -141,8 +152,7 @@ class W2lLoader:
     def stt(self, decoder, audio, fs):
         if fs != 16000:
             raise RuntimeError('only 16khz sample rate is supported')
-        array = ffi.new('float []', list(audio))
-        return decoder.decode(array)
+        return decoder.decode(audio)
 
     def resolve_models(self, dir_name):
         am = os.path.join(self.path, 'acoustic.bin')
